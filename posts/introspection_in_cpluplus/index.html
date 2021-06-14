@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Compile-time type introspection in C&#43;&#43; :: Terminal</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="An introduction to compile-time introspection using SFINAE" />
+<meta name="keywords" content="C&#43;&#43;, Reflection" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://jdiego.github.io/posts/introspection_in_cpluplus/" />
+
+
+
+
+<link rel="stylesheet" href="https://jdiego.github.io/assets/style.css">
+
+  <link rel="stylesheet" href="https://jdiego.github.io/assets/green.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://jdiego.github.io/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://jdiego.github.io/img/favicon/green.png">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+  
+    <meta name="twitter:site" content="" />
+  
+    <meta name="twitter:creator" content="" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Compile-time type introspection in C&#43;&#43;">
+<meta property="og:description" content="An introduction to compile-time introspection using SFINAE" />
+<meta property="og:url" content="https://jdiego.github.io/posts/introspection_in_cpluplus/" />
+<meta property="og:site_name" content="Terminal" />
+
+  <meta property="og:image" content="https://jdiego.github.io/">
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+  <meta property="article:published_time" content="2021-06-03 18:52:06 -0300 -03" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="green">
+
+
+<div class="container full headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    Terminal
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/showcase">Showcase</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/about">About</a></li>
+      
+    
+      
+        <li><a href="/showcase">Showcase</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://jdiego.github.io/posts/introspection_in_cpluplus/">Compile-time type introspection in C++</a></h1>
+  <div class="post-meta">
+    
+      <span class="post-date">
+        2021-06-03 
+      </span>
+    
+    
+    <span class="post-author">:: Diego Saraiva</span>
+    
+  </div>
+
+  
+  <span class="post-tags">
+    
+    #<a href="https://jdiego.github.io/tags/c&#43;&#43;/">C&#43;&#43;</a>&nbsp;
+    
+    #<a href="https://jdiego.github.io/tags/reflection/">Reflection</a>&nbsp;
+    
+  </span>
+  
+
+  
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="introduction">Introduction<a href="#introduction" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>C++ a language designed to be written in a human-readable format and then compiled directly into a bunch of CPU-readable instructions. The only information we could get in touch within a runtime environment is those values stored on heap and stack since after an executable file was loaded into main memory and started to execute, the available scope of the program itself is bound by its own virtual mapped memory space.  This model assumes that we’d write the human-readable source code, and later let the compiler translate them into whatever a CPU understands. It is totally fine for quite a lot of usage cases.</p>
+<p>But, there is a wide range of computer programming tasks that involve the execution of the same algorithm on a set of types defined by an application or on instances of these types, accessing member variables, calling free or member functions in an uniform manner, converting  data between the language’s intrinsic representation and external formats, etc. We can use as example the serialization of persistent data in a custom binary format or in XML,JSON, etc. In this kind of task, you’d want the program to know itself in a human-readable way and feedback the user these pieces of information in runtime. An way to automate these tasks is to use reflection.</p>
+<p>The ability of a program to examine the type or properties of an object at runtime is called introspection, and if it could furthermore modify its own structure and behaviour at runtime then it’s called intercession, the combination of these two abilities is named reflection. The ability of a program to exame the type or properties of an object at runtime is called introspection, and if it could furthermore modify itself then it’s called intercession, the combination of these two abilities is named reflection. To be clear: reflection is the ability examine, introspect, and modify its own structure and behavior at runtime. Python, Java, Ruby, Typescript and a bunch of other languages come with reflection baked in the language. But, and what about C++?</p>
+<p>As we’ve known, unfortunately, C++ doesn&rsquo;t outstand when it comes to reflection features in runtime. It&rsquo;s designed to be statically built but with the ability to perform dynamic behaviour. All the execution procedures are pre-defined by the programmer, and we’d use the conditional branch and the polymorphism to achieve dynamic in runtime. But when we want some introspection capabilities, the best ability provided by default is  Run-Time Type Identification (RTTI), nevertheless, not only RTTI isn&rsquo;t always available, once that it&rsquo;s compiler-specific,
+but the RTTI also gives you barely more than the current type of the manipulated object. As we can noticed in the following code snippet:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;iostream&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;typeinfo&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Base</span> { 
+    <span style="color:#66d9ef">virtual</span> <span style="color:#f92672">~</span>Base() <span style="color:#f92672">=</span> <span style="color:#66d9ef">default</span>;  <span style="color:#75715e">// polymorphic
+</span><span style="color:#75715e"></span>};
+
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Derived</span> <span style="color:#f92672">:</span> Base {};
+
+Derived d;
+Base<span style="color:#f92672">&amp;</span> b <span style="color:#f92672">=</span> d;
+
+<span style="color:#75715e">//NOTE: The string returned by typeid::name is implementation-defined
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#66d9ef">typeid</span>(b).name() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#39;\n&#39;</span>;
+</code></pre></div><p>Thus, C++ doesn’t provide us facilities to get runtime reflection easy; and it is often criticized for this, but it doesn’t mean it doesn’t have any reflection capabilities.</p>
+<p>In this post, we’re gonna explore what introspection features are currently available to us and what is possible to achieve given its limitations. This post is based on <a href="https://jguegant.github.io/blogs/tech/sfinae-introduction.html" title="An introduction to C++'s SFINAE concept: compile-time introspection of a class member">Jean Guegant</a></p>
+<h1 id="introspection-broken-down">Introspection Broken Down<a href="#introspection-broken-down" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>To shortly recap, type introspection is the feature of reflection to ask the object something about something in particular. For example, you could ask an object if it has a serialize member function in order to call it, or you could query the object to know if it has a given data member. What we’re doing here is basically inspect the object to check if it fulfils a contract or a set of criteria - concept feelings, I know but this is subject to another post.</p>
+<p>C++ offers a quite powerful way to inspect whether an object has a specific member or not: <code>SFINAE</code>. Before explaining what is SFINAE and what this acronym stands for, let&rsquo;s explore one of main motivation example to reflection: serialization. For instance, in Python, using reflection off course, one can do the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PyA</span>(object):
+    <span style="color:#66d9ef">def</span> __str__(self):
+        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;I&#39;m a A&#34;</span>
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PyB</span>(object):
+    <span style="color:#75715e"># Specialize method for serialization.</span>
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">serialize</span>(self):
+        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;I&#39;m a B&#34;</span>
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PyC</span>(object):
+    <span style="color:#66d9ef">def</span> __init__(self):
+        <span style="color:#75715e"># NOTE: &#39;serialize&#39; is not a method. </span>
+        self<span style="color:#f92672">.</span>serialize <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>
+
+    <span style="color:#66d9ef">def</span> __str__(self):
+        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;I&#39;m a C&#34;</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">serialize</span>(obj):
+    <span style="color:#75715e"># Let&#39;s check if obj has an attribute called &#39;serialize&#39;.</span>
+    <span style="color:#66d9ef">if</span> hasattr(obj, <span style="color:#e6db74">&#34;serialize&#34;</span>):
+        <span style="color:#75715e"># Let&#39;s check if this &#39;serialize&#39; attribute is a method.</span>
+        <span style="color:#66d9ef">if</span> hasattr(obj<span style="color:#f92672">.</span>serialize, <span style="color:#e6db74">&#34;__call__&#34;</span>):
+            <span style="color:#66d9ef">return</span> obj<span style="color:#f92672">.</span>serialize()
+
+    <span style="color:#75715e"># Else we call the __str__ method.</span>
+    <span style="color:#66d9ef">return</span> str(obj)
+
+a <span style="color:#f92672">=</span> PyA()
+b <span style="color:#f92672">=</span> PyB()
+c <span style="color:#f92672">=</span> PyC()
+
+<span style="color:#66d9ef">print</span>(serialize(a)) <span style="color:#75715e"># output: I am a A.</span>
+<span style="color:#66d9ef">print</span>(serialize(b)) <span style="color:#75715e"># output: I am a B.</span>
+<span style="color:#66d9ef">print</span>(serialize(c)) <span style="color:#75715e"># output: I am a C.</span>
+
+</code></pre></div><p>The Python code above show us that introspection comes pretty handy during serialization process. Once that we can check if an object has an attribute and to query the type of this attribute. In our Python example, introspection permits us to use the serialize method if available and fall back to the more generic method otherwise. Great job! We can do it in plain C++ too!. So, our goal now is to bring the fowolling code a life.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">A</span> {
+    <span style="color:#66d9ef">virtual</span> <span style="color:#f92672">~</span>A() <span style="color:#f92672">=</span> <span style="color:#66d9ef">default</span>;
+};
+
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">B</span> {
+    std<span style="color:#f92672">::</span>string serialize() <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;I&#39;m a B!&#34;</span>; }
+};
+
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">C</span> { 
+    std<span style="color:#f92672">::</span>string serialize; 
+};
+
+
+<span style="color:#75715e">// Function overloads to A and B types 
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>string to_string(<span style="color:#66d9ef">const</span> A<span style="color:#f92672">&amp;</span>){ <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;I&#39;m a A!&#34;</span>;}
+std<span style="color:#f92672">::</span>string to_string(<span style="color:#66d9ef">const</span> C<span style="color:#f92672">&amp;</span>){ <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;I&#39;m a C!&#34;</span>;}
+
+std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> serialize(a)) <span style="color:#75715e">// output: I am a A.
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> serialize(b)) <span style="color:#75715e">// output: I am a B.
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> serialize(c) <span style="color:#75715e">// output: I am a C.
+</span><span style="color:#75715e"></span>
+</code></pre></div><p>I&rsquo;m going to start with the using the C++98 to present the C++ evolution during last years. I pretend to combat the wrong idea that C++ don´t evolves I&rsquo;m going to start with the using the C++98, but don´t worry, I will present the modern form too. My secondary goal with this post is  combat the wrong idea that C++ doesn&rsquo;t evolves. So, exposing the reader to the old forms and new ones gives to him a view about the language progress</p>
+<h1 id="the-c98-way">The C++98-way<a href="#the-c98-way" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>The solution presented below relies on 3 key concepts: <code>overload resolution</code>, the static behavior of <code>sizeof</code> and <code>SFINAE</code>.</p>
+<h2 id="overload-resolution">Overload resolution:<a href="#overload-resolution" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Overload resolution is the process that selects the function to call for a given call expression. Consider the following simple example:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">display_num</span>(<span style="color:#66d9ef">int</span>);      <span style="color:#75715e">// #1
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">display_num</span>(<span style="color:#66d9ef">double</span>);   <span style="color:#75715e">// #2
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+{
+    display_num(<span style="color:#ae81ff">399</span>);       <span style="color:#75715e">// #1 matches better than #2
+</span><span style="color:#75715e"></span>    display_num(<span style="color:#ae81ff">3.99</span>);      <span style="color:#75715e">// #2 matches better than #1
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>In this example, the function name display_num() is said to be overloaded. When this name is used in a call, a C++ compiler must therefore distinguish between the various candidates using additional information; mostly, this information is the types of the call arguments. The rule of thumb in this case is the compiler picks the candidate function whose parameters match the arguments most closely is the one that is called.  So far, so go, but in C++ we also have some sink-hole functions that accept everything: the variadic functions. Variadic functions are functions (e.g. printf) which take a variable number of arguments of any type. How does this work? Nothing is better than an example:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">print</span>(...);  <span style="color:#75715e">// 1
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">void</span> print(<span style="color:#66d9ef">const</span> T<span style="color:#f92672">&amp;</span> t); <span style="color:#75715e">// 2
+</span><span style="color:#75715e"></span>
+print(<span style="color:#ae81ff">1</span>); <span style="color:#75715e">// Call the templated function version of f.
+</span></code></pre></div><p>I need that you keep in mind that C++ prefer non-templates and templates functions over variadic functions! Finally, a picture speaks a thousand words:</p>
+<p><img src="/CPlusPlusResolvesFunctionCall.png" alt="OverloadResolution"></p>
+<h2 id="sfinae-substitution-failure-is-not-an-error">SFINAE (Substitution Failure Is Not An Error)<a href="#sfinae-substitution-failure-is-not-an-error" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Let’s start with a C++ principle behind this concept: The compiler can reject code that &ldquo;would not compile&rdquo; for a given type to provide protection only against attempts to create invalid types but not against attempts to evaluate invalid expressions. We call this principle SFINAE (pronounced like sfee-nay), which stands for &ldquo;substitution failure is not an error&rdquo;. In rough terms, SFINAE is a rule that applies during overload resolution for templates. If substituting the template parameter with the deduced type fails, the compiler won’t report an error; it’ll ignore that particular overload. Let me show an example again:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">// number of elements in a raw array:
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">template</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T, <span style="color:#66d9ef">unsigned</span> N<span style="color:#f92672">&gt;</span> 
+std<span style="color:#f92672">::</span>size_t len (T(<span style="color:#f92672">&amp;</span>)[N])
+{
+    <span style="color:#66d9ef">return</span> N;
+}
+<span style="color:#75715e">// number of elements for a type having size_type:
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">template</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T<span style="color:#f92672">&gt;</span> 
+<span style="color:#66d9ef">typename</span> T<span style="color:#f92672">::</span>size_type len (T <span style="color:#66d9ef">const</span><span style="color:#f92672">&amp;</span> t)
+{
+    <span style="color:#66d9ef">return</span> t.size();
+}
+
+<span style="color:#66d9ef">int</span> a[<span style="color:#ae81ff">10</span>];
+std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> len(a);        <span style="color:#75715e">// OK: only len() for array matches
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> len(<span style="color:#e6db74">&#34;tmp&#34;</span>);    <span style="color:#75715e">//OK: only len() for array matches
+</span><span style="color:#75715e"></span>
+std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> v <span style="color:#f92672">=</span> {<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>};
+std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> len(v);        <span style="color:#75715e">// OK: only len() for a type with
+</span><span style="color:#75715e"></span>
+</code></pre></div><p>Here, we define two function templates len() taking one generic argument:</p>
+<ol>
+<li>The first function template declares the parameter as T(&amp;)[N], which means that
+the parameter has to be an array of N elements of type T.</li>
+<li>The second function template declares the parameter simply as T and requires that the passed argument
+type has a corresponding member size_type and return it.</li>
+</ol>
+<p>According to its signature, the second function template also matches when substituting (respectively) int[10] and char const[4] for T, but those substitutions lead to potential errors in the return type size_type. The second template is therefore ignored for these calls. Analogously, when passing a std::vector, only the second function template matches and the first one is ignored.</p>
+<h2 id="the-operator-sizeof">The operator sizeof:<a href="#the-operator-sizeof" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>There is a surprising amount of power in sizeof; this is because you can apply sizeof to any expression, no matter how complex, and sizeof returns its size, without actually evaluating that expression at runtime. This means that sizeof is aware of overloading, template instantiation, conversion rules — everything that can take part in a C++ expression. In fact, sizeof is a complete facility for deducing the type of an expression; eventually, sizeof throws away the expression and returns you only the size of its result. To remember: sizeof returns the size of the object of the type that would be returned by expression, if evaluated.</p>
+<p>The real power with sizeof comes in when we start using function overloads. If we have 2 versions of the same function, we can pass some parameters to that function, and the compiler will figure out which function is the best match. If each function has differently sized return types, we can use sizeof to discriminate which one the compiler chose for any given parameters. Are you ready? Let&rsquo;s go:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">char</span> no;        
+<span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">char</span> yes[<span style="color:#ae81ff">2</span>];    
+
+<span style="color:#66d9ef">template</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T<span style="color:#f92672">&gt;</span>
+yes test(<span style="color:#66d9ef">const</span> T<span style="color:#f92672">&amp;</span>);
+
+<span style="color:#66d9ef">template</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T<span style="color:#f92672">&gt;</span>
+no test(...);
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(){
+    std<span style="color:#f92672">::</span>cout<span style="color:#f92672">&lt;&lt;</span> (<span style="color:#66d9ef">sizeof</span>(f<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>)) <span style="color:#f92672">==</span> <span style="color:#66d9ef">sizeof</span>(f<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span>(<span style="color:#ae81ff">1</span>))) <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#39;\n&#39;</span>; <span style="color:#75715e">// output: 0 
+</span><span style="color:#75715e"></span>    std<span style="color:#f92672">::</span>cout<span style="color:#f92672">&lt;&lt;</span> (<span style="color:#66d9ef">sizeof</span>(f<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span>(<span style="color:#ae81ff">1</span>)) <span style="color:#f92672">==</span> <span style="color:#66d9ef">sizeof</span>(f<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span>(<span style="color:#ae81ff">1</span>))) <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#39;\n&#39;</span>;   <span style="color:#75715e">// output: 1
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>Calling a function with ellipsis with a C++ object has undefined results, but who cares? Nobody actually calls the function.
+It’s not even implemented!</p>
+<p>What&rsquo;s the point here? We found a way to exploit the sizeof operator to detect whether an arbitrary type T has the same signature as another arbitrary type U! Thus, we can pass a type and use this technique to check if satisfies the expected signature. Here we are going again&hellip;..</p>
+<p>NOTE: Here is one little problem. What if T makes its default constructor private? In this case, the expression T fails to compile and so does all of our scaffolding. Fortunately, there is a simple solution — just use a strawman function returning a T.</p>
+<h2 id="the-working-serialize">The working serialize<a href="#the-working-serialize" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>First, I would like to show you a tricky implemention developed by <a href="https://jguegant.github.io/blogs/tech/sfinae-introduction.html" title="An introduction to C++'s SFINAE concept: compile-time introspection of a class member">Jean Guegant</a></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T<span style="color:#f92672">&gt;</span>
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">has_serialize</span>
+{
+    <span style="color:#75715e">// For the compile time comparison.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">char</span> no;        
+    <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">char</span> yes[<span style="color:#ae81ff">2</span>];    
+
+    <span style="color:#75715e">// 1 - This helper struct permits us to check two properties of a template argument.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> U, U u<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">has_member</span>;
+
+    <span style="color:#75715e">// 2 - Two overloads for yes: one if for the signature of a normal method,
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// one is for the signature of a const method.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> C<span style="color:#f92672">&gt;</span>
+    <span style="color:#66d9ef">static</span> yes<span style="color:#f92672">&amp;</span> test(has_member<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>string (C<span style="color:#f92672">::*</span>)(), <span style="color:#f92672">&amp;</span>C<span style="color:#f92672">::</span>serialize<span style="color:#f92672">&gt;*</span> <span style="color:#75715e">/*unused*/</span>);
+
+    <span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> C<span style="color:#f92672">&gt;</span>
+    <span style="color:#66d9ef">static</span> yes<span style="color:#f92672">&amp;</span> test(has_member<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>string (C<span style="color:#f92672">::*</span>)() <span style="color:#66d9ef">const</span>, <span style="color:#f92672">&amp;</span>C<span style="color:#f92672">::</span>serialize<span style="color:#f92672">&gt;*</span> <span style="color:#75715e">/*unused*/</span>);
+
+    <span style="color:#75715e">// 3 - The C++ sink-hole for failback.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span><span style="color:#f92672">&gt;</span>
+    <span style="color:#66d9ef">static</span> no<span style="color:#f92672">&amp;</span> test(...);
+
+    <span style="color:#75715e">// 4 - The test is actually done here, thanks to the sizeof compile-time evaluation.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">bool</span> value <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(test<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span>(<span style="color:#ae81ff">0</span>)) <span style="color:#f92672">==</span> <span style="color:#66d9ef">sizeof</span>(yes);
+};
+
+<span style="color:#75715e">//
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> has_serialize<span style="color:#f92672">&lt;</span>A<span style="color:#f92672">&gt;::</span>value <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#39;\n&#39;</span>; <span style="color:#75715e">// output: 0 - A hasn&#39;t a serialize method 
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> has_serialize<span style="color:#f92672">&lt;</span>B<span style="color:#f92672">&gt;::</span>value <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#39;\n&#39;</span>; <span style="color:#75715e">// output: 1 - B has a serialize method
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> has_serialize<span style="color:#f92672">&lt;</span>C<span style="color:#f92672">&gt;::</span>value <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#39;\n&#39;</span>; <span style="color:#75715e">// output: 0 - C has&#39;t a serialize method.
+</span></code></pre></div><p>Note that here we&rsquo;re using the size of the return value to check how the overloaded has_member function is resolved. It is tricky, I know. To aid clarity: the helper struct <code>has_member</code> checks whether <code>&amp;C::serialize</code> has the same signature as the first argument! For example, for the  <code>has_serialize&lt;B&gt;</code> call, the <code>has_member&lt;std::string (C::*)(), &amp;C::serialize&gt;</code> should be substituted by <code>has_member&lt;std::string (C::*)(), std::string (C::*)() &amp;C::serialize&gt;</code> and work!</p>
+<p>As we restrict ourselves to C++98, we lose decltype and declval, which are the main driver of this language in C++11 onwards. Don´t be panic; We can emulate this by abusing sizeof again.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T<span style="color:#f92672">&gt;</span>
+T declval();
+
+<span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T<span style="color:#f92672">&gt;</span>
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">has_serialize</span>
+{
+    <span style="color:#75715e">// the size of the array, is determined by our sizeof expression.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> C<span style="color:#f92672">&gt;</span>
+    <span style="color:#66d9ef">static</span> yes<span style="color:#f92672">&amp;</span> test(<span style="color:#66d9ef">int</span> (<span style="color:#f92672">*</span>)[<span style="color:#66d9ef">sizeof</span>(declval<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span>().serialize(), <span style="color:#ae81ff">1</span>)]);
+
+    <span style="color:#75715e">// 2 - The C++ sink-hole for failback.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span><span style="color:#f92672">&gt;</span>
+    <span style="color:#66d9ef">static</span> no<span style="color:#f92672">&amp;</span> test(...);
+
+    <span style="color:#75715e">// 3 - The test is actually done here, thanks to the sizeof compile-time evaluation.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">bool</span> value <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(test<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span>(<span style="color:#ae81ff">0</span>)) <span style="color:#f92672">==</span> <span style="color:#66d9ef">sizeof</span>(yes);
+};
+</code></pre></div><p>Here, we&rsquo;re passing a pointer to a fixed size array <code>int (*) [x]</code>, where x, this will SFINAE out if our type does not have the
+method <code>serialize</code>, just like the previous ones, and will return 1 otherwise.</p>
+<p>Now you would think that it will be handle to use our <code>has_serialize</code> to create a serialize function like the Python one:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">T</span><span style="color:#f92672">&gt;</span>
+std<span style="color:#f92672">::</span>string serialize(<span style="color:#66d9ef">const</span> T<span style="color:#f92672">&amp;</span> obj) {
+    <span style="color:#66d9ef">if</span> (has_serialize<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;::</span>value) { <span style="color:#75715e">// Dead branch for a?
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">return</span> obj.serialize();
+    } 
+    <span style="color:#66d9ef">else</span> {
+        <span style="color:#66d9ef">return</span> std<span style="color:#f92672">::</span>to_string(obj);   
+    }
+}
+<span style="color:#75715e">// 
+</span><span style="color:#75715e"></span>A a; 
+serialize(a); <span style="color:#75715e">// ERROR: no member named &#39;serialize&#39; in &#39;A&#39;.
+</span></code></pre></div><p>But, what&rsquo;s wrong with this solution? Why the compiler reclaims? If you consider the code that you will obtain after substitution and compile-time evaluation, we can understand the reason the error raised by your compiler is absolutely normal:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">std<span style="color:#f92672">::</span>string serialize(<span style="color:#66d9ef">const</span> A<span style="color:#f92672">&amp;</span> obj)
+{
+    <span style="color:#66d9ef">if</span> (<span style="color:#ae81ff">0</span>) { <span style="color:#75715e">// Dead branch 
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">return</span> obj.serialize(); <span style="color:#75715e">// error: no member named &#39;serialize&#39; in &#39;A&#39;.
+</span><span style="color:#75715e"></span>    } 
+    <span style="color:#66d9ef">else</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">to_string</span>(obj);
+    }
+}
+</code></pre></div><p>The compilers won&rsquo;t drop any dead-branch, and <code>obj</code> must therefore have both a <code>serialize</code> method and a <code>to_string</code> overload in this case.
+We need a different technique, we need a way to force compilers to behave as if a particular template didn’t exist. Such templates are said to be disabled. Since, by default, all templates are enabled.</p>
+<p>The solution is to apply an SFINAE mechanism to ensure that function templates are ignored for certain constraints by instrumenting the template code to result in invalid code for these constraints. So, using SFINAE we ​can construct a type that will allow us to guide overload resolution and discard candidate functions based on conditions known at compile-time. I bring to life the last piece of the puzzle called enable_if.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">
+<span style="color:#75715e">//1 - Default template version.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">bool</span>, <span style="color:#66d9ef">typename</span> T <span style="color:#f92672">=</span> <span style="color:#66d9ef">void</span><span style="color:#f92672">&gt;</span>
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">enable_if</span>
+{};  <span style="color:#75715e">// This struct doesn&#39;t define &#34;type&#34; and the substitution will fail if you try to access it.
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">// 2 -  A partial-specialisation recognizes if the expression is true. 
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T<span style="color:#f92672">&gt;</span>
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">enable_if</span><span style="color:#f92672">&lt;</span>true, T<span style="color:#f92672">&gt;</span> {
+  <span style="color:#66d9ef">typedef</span> T type; <span style="color:#75715e">// This struct do have a &#34;type&#34; and won&#39;t fail on access.
+</span><span style="color:#75715e"></span>};
+
+<span style="color:#75715e">// 3
+</span><span style="color:#75715e"></span>enable_if<span style="color:#f92672">&lt;</span>true, <span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;::</span>type t1; <span style="color:#75715e">// OK: The first argument is true so type is int.
+</span><span style="color:#75715e"></span>enable_if<span style="color:#f92672">&lt;</span>false, <span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;::</span>type t2; <span style="color:#75715e">// ERROR: The fisr argument is false so no type named &#39;type&#39;
+</span><span style="color:#75715e">// 4
+</span><span style="color:#75715e"></span>enable_if<span style="color:#f92672">&lt;</span>has_serialize<span style="color:#f92672">&lt;</span>B<span style="color:#f92672">&gt;::</span>value, <span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;::</span>type t3; <span style="color:#75715e">// OK: B has a serialize method and t3::type is int.
+</span><span style="color:#75715e"></span>enable_if<span style="color:#f92672">&lt;</span>has_serialize<span style="color:#f92672">&lt;</span>A<span style="color:#f92672">&gt;::</span>value, <span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;::</span>type t4; <span style="color:#75715e">// ERROR: A hasn&#39;t a serialize method and no type named &#39;type&#39;.
+</span></code></pre></div><p>In 1, the base template does not define any member types, but the partial specialization on true does in 2. This means, if the condition evaluates to false, the substitution fails and the candidate will be discarded. Do you know what this means? We can trigger a substitution failure according to a compile time expression with enable_if.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">T</span><span style="color:#f92672">&gt;</span> 
+<span style="color:#66d9ef">typename</span> enable_if<span style="color:#f92672">&lt;</span>has_serialize<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;::</span>value, std<span style="color:#f92672">::</span>string<span style="color:#f92672">&gt;::</span>type serialize(<span style="color:#66d9ef">const</span> T<span style="color:#f92672">&amp;</span> obj)
+{
+    <span style="color:#66d9ef">return</span> obj.serialize();
+}
+
+<span style="color:#66d9ef">template</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">T</span><span style="color:#f92672">&gt;</span> 
+<span style="color:#66d9ef">typename</span> enable_if<span style="color:#f92672">&lt;</span>not has_serialize<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;::</span>value, std<span style="color:#f92672">::</span>string<span style="color:#f92672">&gt;::</span>type serialize(<span style="color:#66d9ef">const</span> T<span style="color:#f92672">&amp;</span> obj)
+{
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">to_string</span>(obj);
+}
+
+A a;
+B b;
+C c;
+
+<span style="color:#75715e">// The following lines work like a charm!
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> serialize(a) <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> serialize(b) <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> serialize(c) <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+</code></pre></div><p>Note SFINAE at work here. When we make the <code>serialize(B b)</code>, the compiler selects the first overload: since the condition <code>has::serialize&lt;B&gt;</code> is true, the specialization of struct <code>enable_if</code> for <code>true</code> is used, and its internal type is set to <code>int</code>. The second overload is omitted because without the <code>true</code> specialization (<code>not has_serialize&lt;A&gt;::value</code> is false) the general form of struct <code>enable_if</code> is selected, and it doesn&rsquo;t have a type, so the type of the argument results in a substitution failure.</p>
+<p>Thus, we want one of the two functions to be instantiated for a given type T. In other words, we explicitly manage the overload set at compile-time.</p>
+<p>NOTE: enable_if is so important that it was introducted at C++11 in STL. For C++11 and beyond, you can use std::enable_if.</p>
+<h1 id="links">LINKS<a href="#links" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>[1] <a href="https://jguegant.github.io/blogs/tech/sfinae-introduction.html">Jean Guegant</a>: An introduction to C++&rsquo;s SFINAE concept: compile-time introspection of a class member</p>
+<p>[2] <a href="https://preshing.com/20210315/how-cpp-resolves-a-function-call/">Jean Guegant</a>: How C++ Resolves a Function Call</p>
+<p>[3] <a href="https://gracicot.github.io/reflection/2018/04/03/reflection-present.html">Guillaume Racicot</a>: Reflection in C++ Part 1: The Present</p>
+
+      </div></div>
+
+  
+  
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2021 Powered by <a href="http://gohugo.io">Hugo</a></span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://jdiego.github.io/assets/main.js"></script>
+<script src="https://jdiego.github.io/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>
