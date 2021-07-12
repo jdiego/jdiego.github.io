@@ -70,9 +70,9 @@ a &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; PyA()
 b &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; PyB()
 c &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; PyC()
 
-&lt;span style=&#34;color:#66d9ef&#34;&gt;print&lt;/span&gt;(serialize(a)) &lt;span style=&#34;color:#75715e&#34;&gt;# output: I am a A.&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;print&lt;/span&gt;(serialize(b)) &lt;span style=&#34;color:#75715e&#34;&gt;# output: I am a B.&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;print&lt;/span&gt;(serialize(c)) &lt;span style=&#34;color:#75715e&#34;&gt;# output: I am a C.&lt;/span&gt;
+print(serialize(a)) &lt;span style=&#34;color:#75715e&#34;&gt;# output: I am a A.&lt;/span&gt;
+print(serialize(b)) &lt;span style=&#34;color:#75715e&#34;&gt;# output: I am a B.&lt;/span&gt;
+print(serialize(c)) &lt;span style=&#34;color:#75715e&#34;&gt;# output: I am a C.&lt;/span&gt;
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The Python code above show us that introspection comes pretty handy during serialization process. Once that we can check if an object has an attribute and to query the type of this attribute. In our Python example, introspection permits us to use the serialize method if available and fall back to the more generic method otherwise. Great job! We can do it in plain C++ too!. So, our goal now is to bring the fowolling code a life.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;A&lt;/span&gt; {

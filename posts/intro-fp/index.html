@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Introduction to Functional Programming :: Terminal</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Introduction to functional programming concepts" />
+<meta name="keywords" content="C&#43;&#43;, FunctionalProgramming" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://jdiego.github.io/posts/intro-fp/" />
+
+
+
+
+<link rel="stylesheet" href="https://jdiego.github.io/assets/style.css">
+
+  <link rel="stylesheet" href="https://jdiego.github.io/assets/green.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://jdiego.github.io/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://jdiego.github.io/img/favicon/green.png">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+  
+    <meta name="twitter:site" content="" />
+  
+    <meta name="twitter:creator" content="" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Introduction to Functional Programming">
+<meta property="og:description" content="Introduction to functional programming concepts" />
+<meta property="og:url" content="https://jdiego.github.io/posts/intro-fp/" />
+<meta property="og:site_name" content="Terminal" />
+
+  <meta property="og:image" content="https://jdiego.github.io/">
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+  <meta property="article:published_time" content="2021-06-15 10:32:20 -0300 -03" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="green">
+
+
+<div class="container full headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    Terminal
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/showcase">Showcase</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/about">About</a></li>
+      
+    
+      
+        <li><a href="/showcase">Showcase</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://jdiego.github.io/posts/intro-fp/">Introduction to Functional Programming</a></h1>
+  <div class="post-meta">
+    
+      <span class="post-date">
+        2021-06-15 
+      </span>
+    
+    
+  </div>
+
+  
+  <span class="post-tags">
+    
+    #<a href="https://jdiego.github.io/tags/c&#43;&#43;/">C&#43;&#43;</a>&nbsp;
+    
+    #<a href="https://jdiego.github.io/tags/functionalprogramming/">FunctionalProgramming</a>&nbsp;
+    
+  </span>
+  
+
+  
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="introduction-to-functional-programming-fp">Introduction to Functional Programming (FP)<a href="#introduction-to-functional-programming-fp" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>Functional Programming (FP) is an old programming paradigm that was born in academia during the 1950s; it stayed restrict tied to that environment for decades. Although it was always a hot topic for scientific researchers, it was never popular in the industry. Instead, imperative languages (procedural and object-oriented) became the mainstream programming languages.</p>
+<p>However, in the past few years,  we have seen a boost in the popularity of the functional programming paradigm. However, instead of functional programming languages becoming the most popular, something else is happening: the most popular programming languages have started introducing features inspired by functional programming languages. Consequently, we can state that functional programming has burst the academic bubble and now it is among us, albeit in an unexpected way, but life is complicated.</p>
+<p>But, what is functional programming after all? Well, answering this question is very complicated because no widely accepted definition exists. But don&rsquo;t panic. The lack of a broadly accepted definition it&rsquo;s quite common when we are talking about programming languages,  and being honest it&rsquo;s common in other computer science topics&hellip;</p>
+<p>People usually tend to define FP through features related to functional concepts in their favourite language. In the FP context, concepts including pure functions, lazy evaluation, pattern matching are frequently mentioned. But defining functional programming in this way is alienate people. The focus shouldn&rsquo;t be on particular language features. We need a better definition to avoid language bias. And I know that many object-oriented programming books apply this strategy to define what is an object-oriented language, but it&rsquo;s out of scope for now, and this isn&rsquo;t the way definitely.</p>
+<p>In programming, we keep decomposing a problem until you reach the level of detail that you can deal with, solve each subproblem in turn, and re-compose the solutions bottom-up. There are, roughly speaking, two ways of doing it: by commanding the computer what to do, or by telling it how to do it. This difference originated the terms <em>declarative</em> and <em>imperative</em> programming.</p>
+<p>Broadly speaking, Functional Programming is a declarative <em>style of programming</em> in which the main program building blocks are functions as opposed to objects and procedures. A program written in the functional style doesn’t specify the instructions that should be performed to produce the outcome but rather it defines what the outcome is.</p>
+<p>Be advised: The way we write a function in the functional paradigm is different from the way we write functions in the procedural style. Functional programming focuses on expressions, while Procedural programming focuses on statements.  Don&rsquo;t worry, I know that things can be a bit blurry now. Then, let&rsquo;s consider a small example to illuminate our thoughts: A program to calculate the sum of a list of numbers.</p>
+<p>The imperative version of this program is usually described as a sequence of actions ordered in time.  Thus we implement this by iterating over the number list and adding the numbers to the accumulator variable. So, we are just describing the sequence of interdependent steps (fine-grained instructions) of how to sum a list of numbers and modifying the state of some conceptual state machine.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">accumulate</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;&amp;</span> numbers) 
+{
+    <span style="color:#66d9ef">int</span> acc <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">auto</span><span style="color:#f92672">&amp;</span> number : nuumbers)
+        acc <span style="color:#f92672">+=</span> number;
+}
+</code></pre></div><p>On the other hand, in the declarative version, you need to define only what a sum of a list of numbers is. The computer knows what to do when it’s required to calculate a sum. One way you can do this is to say that the sum of a list of numbers equals the first element of the list added to the sum of the rest of the list and that the sum is zero if the list is empty. You define what the sum is without explaining how to calculate it.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">using</span> iterator <span style="color:#f92672">=</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">double</span><span style="color:#f92672">&gt;::</span>iterator;
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">accumulate_impl</span>(<span style="color:#66d9ef">const</span> iterator begin, <span style="color:#66d9ef">const</span> iterator end)
+{ 
+    <span style="color:#66d9ef">return</span> (begin <span style="color:#f92672">!=</span> end) <span style="color:#f92672">?</span> <span style="color:#f92672">*</span>begin <span style="color:#f92672">+</span> accumulate_impl(begin <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, end) <span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>;
+}
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">accumulate</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;&amp;</span> numbers)
+{
+    <span style="color:#75715e">//
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> accumulate_impl(numbers.cbegin(), numbers.cend());
+}
+</code></pre></div><p>You can notice that the code presented above avoids state and mutable data. It emphasizes the application of functions. Also, we can see that iteration isn&rsquo;t the predominant control structure anymore.</p>
+<h2 id="imperative-vs-declarative-programming">Imperative vs. Declarative programming<a href="#imperative-vs-declarative-programming" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>This post could be very abstract until this moment, so to clarify the concepts, let&rsquo;s look at a more elaborate but still simple program implemented in the imperative style and its functional equivalent. The main goal here is demonstrate the difference between these two approaches.</p>
+<p>Here we go: Imagine that we want to write a function that takes a list of files and calculates the number of lines in each. I assume for simplicity that the last line in the file also ends with a newline character, so we need to count only the number of newline characters in the current file.</p>
+<p>Reasoning imperatively, you might implement the solution decomposing it into the following steps :</p>
+<ol>
+<li>Open each file.</li>
+<li>Define a counter to store the number of lines.</li>
+<li>Read the file one character at a time, and increase the counter every time the newline character (\n) occurs.</li>
+<li>At the end of a file, store the number of lines calculated.</li>
+</ol>
+<p>The following algorithm implements the steps listed before. In summary, we are reading the files character by character and counts the number of newline characters.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">// Calculating the number of lines the imperative way
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">count_lines</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>string<span style="color:#f92672">&amp;</span> filename)
+{
+    <span style="color:#66d9ef">int</span> new_line_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    std<span style="color:#f92672">::</span>ifstream infile(filename);
+    <span style="color:#66d9ef">char</span> ch;
+    <span style="color:#66d9ef">while</span> (infile.get(ch)) 
+    {
+        <span style="color:#66d9ef">if</span> (ch <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;\n&#39;</span>)
+            new_line_count<span style="color:#f92672">++</span>;
+    }
+    <span style="color:#66d9ef">return</span> new_line_count;
+}
+std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> count_lines_in_files(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>string<span style="color:#f92672">&gt;&amp;</span> files)
+{
+    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> lines_in_each_file(files.size());
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">auto</span><span style="color:#f92672">&amp;</span> file : files) 
+    {
+        lines_in_each_file.push_back(count_lines(file));
+    }
+    <span style="color:#66d9ef">return</span> lines_in_each_file;
+}
+</code></pre></div><p>Now, we are moving this code to a more functional one. The first version exploits a set of C++ abstractions, such as use the standard std::count algorithm instead of counting the number of newlines manually and the stream iterators  that allow us to treat the I/O streams similarly to ordinary collections like lists and vectors.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">//functionalizing the code.... 
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">count_lines</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>string<span style="color:#f92672">&amp;</span> filename)
+{
+    std<span style="color:#f92672">::</span>ifstream infile(filename);
+    <span style="color:#66d9ef">return</span> std<span style="color:#f92672">::</span>count(
+                   std<span style="color:#f92672">::</span>istreambuf_iterator<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">char</span><span style="color:#f92672">&gt;</span>(infile),           
+                   std<span style="color:#f92672">::</span>istreambuf_iterator<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">char</span><span style="color:#f92672">&gt;</span>(), <span style="color:#e6db74">&#39;\n&#39;</span>);
+}
+<span style="color:#75715e">//
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> count_lines_in_files(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>string<span style="color:#f92672">&gt;&amp;</span> files)
+{
+    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> lines_in_each_file(files.size());
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">auto</span><span style="color:#f92672">&amp;</span> file : files) 
+    {
+        lines_in_each_file.push_back(count_lines(file)); 
+    }
+    <span style="color:#66d9ef">return</span> lines_in_each_file;
+}
+</code></pre></div><p>When we compare the solutions presented above, we can notice that the main change occurred on the <code>count_lines</code> function.
+Now, his only task is to convert its input (the filename) to the type that <code>std::count</code> can understand: a pair of stream iterators. In this way, we are no longer concerned about how to implement the counting new lines algorithm. We are just declaring that we want to count the number of newlines that appears in the given input stream.</p>
+<p>It&rsquo;s quite common to use the number of lines of code (LOC) to measure the complexity of a program. Although LOC can perfectly express the difference in the complexity between imperative and functional solutions, I prefer to highlight another benefit from the functional solution: The fewer state variables to worry about. Each program has an implicity conceptual state machine binds to it. The correct management of state changes into a program is one of the most significant sources of software bugs. I believe that by reducing the number of states to keep track, we reducing the number of bugs.</p>
+<p>Therefore, the main idea in the functional style is to use
+abstractions to express the higher-level intent of an algorithm instead of specifying how to do something.</p>
+<p>But, we can do even better. We can convert the entire algorithm to functional style, a.k.a. we are going to specify what should be done, instead of how it should be done. I know that I&rsquo;m being repeating but it&rsquo;s important to consolidate this principle in our minds.</p>
+<p>To start, we need an abstraction that allows us to applies a function to all elements in a collection and collects the results. Fortunately, The STL designed the <code>std::transform</code> algorithm for this. Essentially, the <code>std::transform</code> abstraction applies a function to each element of a range defined by a pair of iterators and write the results somewhere.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> count_lines_in_files(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>string<span style="color:#f92672">&gt;&amp;</span> files)
+{
+    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> lines_in_each_file(files.size());
+    <span style="color:#75715e">//
+</span><span style="color:#75715e"></span>    std<span style="color:#f92672">::</span>transform(
+        files.cbegin(), files.cend(), 
+        lines_in_each_files.begin(), 
+        count_lines                
+    );
+    <span style="color:#66d9ef">return</span> lines_in_each_files;
+
+}
+</code></pre></div><p>The new implementation of the <code>count_lines_in_files</code> applies the <code>std::transform</code> in each element of the files collection one by one,
+transforms them using the <code>count_lines</code> function, and stores the resulting values in the <code>lines_in_each_file</code> vector.</p>
+<p>This code no longer specifies the algorithm steps that need to be taken, but rather how the input should be transformed in order to
+get the desired output. But, what&rsquo;s the big deal here? This solution makes the code less prone to errors, since it removes the state
+variables, and rely on the standard library implementation of the counting algorithm instead of rolling your own.</p>
+<h2 id="bonus-track-range-library---c20">BONUS TRACK: Range Library - C++20<a href="#bonus-track-range-library---c20" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>We can remove the boilerplate code from the previous functional solutions to be considered more readable than the imperative version.
+We can use the C++ 20 std::ranges library to do it. (I think that we can talk about ranges in near future, ranges concepts will be a big improvement on STL).</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">count_lines</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>string<span style="color:#f92672">&amp;</span> filename)
+{
+    std<span style="color:#f92672">::</span>ifstream in(filename);
+    <span style="color:#66d9ef">return</span> std<span style="color:#f92672">::</span>count( 
+        std<span style="color:#f92672">::</span>istreambuf_iterator<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">char</span><span style="color:#f92672">&gt;</span>(in), 
+        std<span style="color:#f92672">::</span>istreambuf_iterator<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">char</span><span style="color:#f92672">&gt;</span>(), <span style="color:#e6db74">&#39;\n&#39;</span>);
+}
+
+std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> count_lines_in_files(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>string<span style="color:#f92672">&gt;&amp;</span> files)
+{
+    <span style="color:#66d9ef">auto</span> rng <span style="color:#f92672">=</span> files 
+                <span style="color:#f92672">|</span> ranges<span style="color:#f92672">::</span>views<span style="color:#f92672">::</span>transform(count_lines);
+    <span style="color:#66d9ef">return</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span>(rng.begin(), rng.end());
+}
+</code></pre></div><p>This solution is much less verbose than the imperative solution and much more obvious.</p>
+<h2 id="pure-functions">Pure functions<a href="#pure-functions" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>One of the most significant sources of software bugs is program state management. Every program has an implicity state machine binds to him.  It’s difficult to keep track of all possible states of a program and its transitions. The OOP paradigm provides the means to group parts of the state into objects, thus making it easier to manage. But it doesn’t significantly reduce the number of possible states neither the number of possible transitions.</p>
+<h1 id="references">References<a href="#references" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<ul>
+<li><a href="https://bartoszmilewski.com/2015/04/15/category-theory-and-declarative-programming/">https://bartoszmilewski.com/2015/04/15/category-theory-and-declarative-programming/</a></li>
+<li><a href="https://blog.webix.com/difference-between-declarative-and-imperative-programming-with-language-examples/">https://blog.webix.com/difference-between-declarative-and-imperative-programming-with-language-examples/</a></li>
+<li>Functional Programming in C++</li>
+<li>Learning C++ Functional Programming</li>
+</ul>
+
+      </div></div>
+
+  
+  
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h">Read other posts</span>
+        <hr />
+    </div>
+    <div class="pagination__buttons">
+        
+        
+        <span class="button next">
+            <a href="https://jdiego.github.io/posts/pointers-references-optional-cpp/">
+                <span class="button__text">Pointers References Optional Cpp</span>
+                <span class="button__icon">→</span>
+            </a>
+        </span>
+        
+    </div>
+</div>
+
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2021 Powered by <a href="http://gohugo.io">Hugo</a></span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://jdiego.github.io/assets/main.js"></script>
+<script src="https://jdiego.github.io/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>

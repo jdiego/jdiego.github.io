@@ -208,9 +208,9 @@ a <span style="color:#f92672">=</span> PyA()
 b <span style="color:#f92672">=</span> PyB()
 c <span style="color:#f92672">=</span> PyC()
 
-<span style="color:#66d9ef">print</span>(serialize(a)) <span style="color:#75715e"># output: I am a A.</span>
-<span style="color:#66d9ef">print</span>(serialize(b)) <span style="color:#75715e"># output: I am a B.</span>
-<span style="color:#66d9ef">print</span>(serialize(c)) <span style="color:#75715e"># output: I am a C.</span>
+print(serialize(a)) <span style="color:#75715e"># output: I am a A.</span>
+print(serialize(b)) <span style="color:#75715e"># output: I am a B.</span>
+print(serialize(c)) <span style="color:#75715e"># output: I am a C.</span>
 
 </code></pre></div><p>The Python code above show us that introspection comes pretty handy during serialization process. Once that we can check if an object has an attribute and to query the type of this attribute. In our Python example, introspection permits us to use the serialize method if available and fall back to the more generic method otherwise. Great job! We can do it in plain C++ too!. So, our goal now is to bring the fowolling code a life.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">A</span> {
@@ -435,6 +435,24 @@ std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt
 
   
   
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h">Read other posts</span>
+        <hr />
+    </div>
+    <div class="pagination__buttons">
+        
+        <span class="button previous">
+            <a href="https://jdiego.github.io/posts/pointers-references-optional-cpp/">
+                <span class="button__icon">←</span>
+                <span class="button__text">Pointers References Optional Cpp</span>
+            </a>
+        </span>
+        
+        
+    </div>
+</div>
+
   
 
   
