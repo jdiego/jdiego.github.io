@@ -34,7 +34,7 @@
   
     <meta name="twitter:site" content="" />
   
-    <meta name="twitter:creator" content="" />
+    <meta name="twitter:creator" content="DiegoSaraiva" />
 
 
 
@@ -133,6 +133,8 @@
       </span>
     
     
+    <span class="post-author">:: DiegoSaraiva</span>
+    
   </div>
 
   
@@ -159,14 +161,14 @@
 <p>Broadly speaking, Functional Programming is a declarative <em>style of programming</em> in which the main program building blocks are functions as opposed to objects and procedures. A program written in the functional style doesn’t specify the instructions that should be performed to produce the outcome but rather it defines what the outcome is.</p>
 <p>Be advised: The way we write a function in the functional paradigm is different from the way we write functions in the procedural style. Functional programming focuses on expressions, while Procedural programming focuses on statements.  Don&rsquo;t worry, I know that things can be a bit blurry now. Then, let&rsquo;s consider a small example to illuminate our thoughts: A program to calculate the sum of a list of numbers.</p>
 <p>The imperative version of this program is usually described as a sequence of actions ordered in time.  Thus we implement this by iterating over the number list and adding the numbers to the accumulator variable. So, we are just describing the sequence of interdependent steps (fine-grained instructions) of how to sum a list of numbers and modifying the state of some conceptual state machine.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">accumulate</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;&amp;</span> numbers) 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">accumulate</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;&amp;</span> numbers) 
 {
     <span style="color:#66d9ef">int</span> acc <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
     <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">auto</span><span style="color:#f92672">&amp;</span> number : nuumbers)
         acc <span style="color:#f92672">+=</span> number;
 }
 </code></pre></div><p>On the other hand, in the declarative version, you need to define only what a sum of a list of numbers is. The computer knows what to do when it’s required to calculate a sum. One way you can do this is to say that the sum of a list of numbers equals the first element of the list added to the sum of the rest of the list and that the sum is zero if the list is empty. You define what the sum is without explaining how to calculate it.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">using</span> iterator <span style="color:#f92672">=</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">double</span><span style="color:#f92672">&gt;::</span>iterator;
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">using</span> iterator <span style="color:#f92672">=</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">double</span><span style="color:#f92672">&gt;::</span>iterator;
 <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">accumulate_impl</span>(<span style="color:#66d9ef">const</span> iterator begin, <span style="color:#66d9ef">const</span> iterator end)
 { 
     <span style="color:#66d9ef">return</span> (begin <span style="color:#f92672">!=</span> end) <span style="color:#f92672">?</span> <span style="color:#f92672">*</span>begin <span style="color:#f92672">+</span> accumulate_impl(begin <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, end) <span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>;
@@ -188,7 +190,7 @@
 <li>At the end of a file, store the number of lines calculated.</li>
 </ol>
 <p>The following algorithm implements the steps listed before. In summary, we are reading the files character by character and counts the number of newline characters.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">// Calculating the number of lines the imperative way
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">// Calculating the number of lines the imperative way
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">count_lines</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>string<span style="color:#f92672">&amp;</span> filename)
 {
     <span style="color:#66d9ef">int</span> new_line_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
@@ -211,7 +213,7 @@ std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</
     <span style="color:#66d9ef">return</span> lines_in_each_file;
 }
 </code></pre></div><p>Now, we are moving this code to a more functional one. The first version exploits a set of C++ abstractions, such as use the standard std::count algorithm instead of counting the number of newlines manually and the stream iterators  that allow us to treat the I/O streams similarly to ordinary collections like lists and vectors.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">//functionalizing the code.... 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">//functionalizing the code.... 
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">count_lines</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>string<span style="color:#f92672">&amp;</span> filename)
 {
     std<span style="color:#f92672">::</span>ifstream infile(filename);
@@ -236,7 +238,7 @@ Now, his only task is to convert its input (the filename) to the type that <code
 abstractions to express the higher-level intent of an algorithm instead of specifying how to do something.</p>
 <p>But, we can do even better. We can convert the entire algorithm to functional style, a.k.a. we are going to specify what should be done, instead of how it should be done. I know that I&rsquo;m being repeating but it&rsquo;s important to consolidate this principle in our minds.</p>
 <p>To start, we need an abstraction that allows us to applies a function to all elements in a collection and collects the results. Fortunately, The STL designed the <code>std::transform</code> algorithm for this. Essentially, the <code>std::transform</code> abstraction applies a function to each element of a range defined by a pair of iterators and write the results somewhere.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> count_lines_in_files(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>string<span style="color:#f92672">&gt;&amp;</span> files)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> count_lines_in_files(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>string<span style="color:#f92672">&gt;&amp;</span> files)
 {
     std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span> lines_in_each_file(files.size());
     <span style="color:#75715e">//
@@ -256,7 +258,7 @@ variables, and rely on the standard library implementation of the counting algor
 <h2 id="bonus-track-range-library---c20">BONUS TRACK: Range Library - C++20<a href="#bonus-track-range-library---c20" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>We can remove the boilerplate code from the previous functional solutions to be considered more readable than the imperative version.
 We can use the C++ 20 std::ranges library to do it. (I think that we can talk about ranges in near future, ranges concepts will be a big improvement on STL).</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">count_lines</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>string<span style="color:#f92672">&amp;</span> filename)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">count_lines</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>string<span style="color:#f92672">&amp;</span> filename)
 {
     std<span style="color:#f92672">::</span>ifstream in(filename);
     <span style="color:#66d9ef">return</span> std<span style="color:#f92672">::</span>count( 
@@ -291,6 +293,13 @@ std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</
         <hr />
     </div>
     <div class="pagination__buttons">
+        
+        <span class="button previous">
+            <a href="https://jdiego.github.io/posts/thinking-functionally/">
+                <span class="button__icon">←</span>
+                <span class="button__text">Thinking Functionally</span>
+            </a>
+        </span>
         
         
         <span class="button next">

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Thinking Functionally :: Terminal</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Introduction to functional programming using C&#43;&#43; - Part II" />
+<meta name="keywords" content="Functional Programming, High-order functions, folding" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://jdiego.github.io/posts/thinking-functionally/" />
+
+
+
+
+<link rel="stylesheet" href="https://jdiego.github.io/assets/style.css">
+
+  <link rel="stylesheet" href="https://jdiego.github.io/assets/green.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://jdiego.github.io/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://jdiego.github.io/img/favicon/green.png">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+  
+    <meta name="twitter:site" content="" />
+  
+    <meta name="twitter:creator" content="DiegoSaraiva" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Thinking Functionally">
+<meta property="og:description" content="Introduction to functional programming using C&#43;&#43; - Part II" />
+<meta property="og:url" content="https://jdiego.github.io/posts/thinking-functionally/" />
+<meta property="og:site_name" content="Terminal" />
+
+  <meta property="og:image" content="https://jdiego.github.io/">
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+  <meta property="article:published_time" content="2021-07-11 23:41:27 -0300 -03" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="green">
+
+
+<div class="container full headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    Terminal
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/showcase">Showcase</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/about">About</a></li>
+      
+    
+      
+        <li><a href="/showcase">Showcase</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://jdiego.github.io/posts/thinking-functionally/">Thinking Functionally</a></h1>
+  <div class="post-meta">
+    
+      <span class="post-date">
+        2021-07-11 
+      </span>
+    
+    
+    <span class="post-author">:: Diego Saraiva</span>
+    
+  </div>
+
+  
+  <span class="post-tags">
+    
+    #<a href="https://jdiego.github.io/tags/c&#43;&#43;/">C&#43;&#43;</a>&nbsp;
+    
+    #<a href="https://jdiego.github.io/tags/functionalprogramming/">FunctionalProgramming</a>&nbsp;
+    
+  </span>
+  
+
+  
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="functions-as-first-class-citizens">Functions as first class citizens<a href="#functions-as-first-class-citizens" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>In the functional programming world, functions are treated like ordinary values. They can be stored into variables, put into collections, passed to other functions as arguments, and returned from other functions as results. Thus, the first-class functions behave like a regular data. Functions that take other functions as arguments or that return new functions are called higher-order functions. Higher-order functions are closely related to first-class functions in that higher-order functions and first-class functions both allow functions as arguments and results of other functions. So maybe you are asking: What&rsquo;s the difference between this two concepts?</p>
+<p>The distinction between the two is subtle: &ldquo;higher-order&rdquo; describes a mathematical concept of functions that operate on other functions, while &ldquo;first-class&rdquo; is a computer science term for programming language entities that have no restriction on their use, as explained before, thus first-class functions can appear anywhere in the program that variables can, including as arguments to other functions and as their return values.</p>
+<p>In the previous post, we discussed how to build programs more concise and efficient by describing what the program should do on a higher abstraction level instead of implementing everything by hand. Higher-order functions are essential for that task. Higher-order functions allow us to apply a function to its arguments one at a time, with each application returning a new function that accepts the next argument. This technique is called partial application or currying. Currying enables a programmer to succinctly express, for example, the successor function as the addition operator partially applied to the natural number one.</p>
+<p>Let&rsquo;s illustrate this with an example. Imagine that you have a group of people, and need to write the names of all the devs in the group.</p>
+<p>The first higher-level construct you could use here is collection filtering. Roughly speaking, filtering is an algorithm that checks whether an element in the original collection satisfies a predicate (a boolean condition); if it does, the element is put into the result. The filtering algorithm can&rsquo;t know in advance what predicates users will use to filter their collections. Filtering could be done on a specific attribute, on multiple attributes at the same time, or on a more complex condition. So, the filtering algorithm needs to provide a way for the user to specify the predicate.</p>
+<p>Now, let&rsquo;s back to our example; the filtering requires a predicate that takes a person and returns whether the person is a developer or not. Since filtering allows you to pass a predicate function to it, filtering is, by definition, a higher-order function. We can resolve this problem by using STL algorithms.</p>
+<p>Remember that: we usually don&rsquo;t want to change the original collection because we aim to be as pure as possible; thus, we can use the std::copy_if algorithm. The std::copy_if algorithm copies elements from a source range for which a predicate returns true, so you can think of it as operating as a filter. The first two arguments are input iterators that define the source range, the third argument is an output iterator that points to the first position in the destination range, and the fourth argument is the predicate. Because we don&rsquo;t know the number of developers in advance, we need to create an empty vector of developers and use std::back_inserter as the destination iterator.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>person_t<span style="color:#f92672">&gt;</span> devs;    
+<span style="color:#66d9ef">bool</span> <span style="color:#a6e22e">is_dev</span>(<span style="color:#66d9ef">const</span> person_t<span style="color:#f92672">&amp;</span> person);
+
+std<span style="color:#f92672">::</span>copy_if(people.cbegin(), people.cend(), std<span style="color:#f92672">::</span>back_inserter(devs), is_dev);    
+
+<span style="color:#75715e">// A naive implementation for the filter concept - just for local use
+</span><span style="color:#75715e">// The filter construct takes a collection - a vector in our case
+</span><span style="color:#75715e">// and a predicate function (T → bool) as arguments, and 
+</span><span style="color:#75715e">// it returns a collection of filtered items, so its type is written like this:
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">template</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T, <span style="color:#66d9ef">typename</span> Predicate<span style="color:#f92672">&gt;</span>
+std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> filter(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;&amp;</span> input, Predicate pred)
+{
+    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> results;
+    std<span style="color:#f92672">::</span>copy_if(std<span style="color:#f92672">::</span>begin(input), std<span style="color:#f92672">::</span>end(input), std<span style="color:#f92672">::</span>back_inserter(results), pred);
+    <span style="color:#66d9ef">return</span> results;
+}
+
+<span style="color:#66d9ef">auto</span> devs <span style="color:#f92672">=</span> filter(people, is_dev);
+
+</code></pre></div><p>After the filtering, we have the developers but not their names. So, we still have a job to do. We need another construction, and in this time, we need a construct that takes a group of people and returns their names. Similar to filtering, this construct does not know in advance what information we want to collect from the original elements. We might want to get a specific attribute, combine multiple attributes, or do something more customized.</p>
+<p>In summary, the construct needs to allow the user to specify the function that takes an item from the collection, does something with it, and returns a value that will be put into the resulting collection. This construct is called map or transform, and the output collection does not need to contain items of the same type as the input collection (unlike with filtering). We can use the std::transform algorithm.</p>
+<p>The std::algorithm provides two abilities:</p>
+<ol>
+<li>The first form has four arguments. It transforms elements from a source to a destination range. Thus, this form copies and modifies elements in one step.</li>
+<li>The second form has five arguments. It combines elements from two source sequences and writes the results to a destination range.</li>
+</ol>
+<p>Here, we will use the first form. So, we need to pass the input collection as a pair of iterators, the transformation function, and where the results should be stored. In this case, we know that the number of names is the same as the number of developers in the group, so we can immediately create the names vector to be the size required to store the result and use names.begin() as the destination iterator instead of relying on std::back_inserter, as we did before. This way, we will eliminate the potential memory reallocations needed for vector resizing. After all, we are C++ programmers, and performance matters, right?</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>string<span style="color:#f92672">&gt;</span> names(devs.size());  
+<span style="color:#75715e">// The transform algorithm should call the transformation function for each of them and collect the results. 
+</span><span style="color:#75715e">// In this case, you’re passing it a function that returns the name of a developer. 
+</span><span style="color:#75715e">// The transform algorithm collects the name of every person into a new collection.
+</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>transform(devs.cbegin(), devs.cend(), names.begin(), name);    
+</code></pre></div><p>When we compose the filter and map (or transform) constructs by passing the result of one as the input for the other, we get the solution to the original problem: the names of all developers in the given group of people.</p>
+<h2 id="folding-and-tail-recursion">Folding and tail recursion<a href="#folding-and-tail-recursion" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Recursion is an essential concept in computer science. Once we can naturally express many computational problems using some form of recursion and prove the properties of such programs using some form of induction.  Indeed, in the functional approach to programming, recursion and induction are the essential tools for defining and proving the properties of programs.  But, just as in imperative languages where it is preferable to use structured iteration constructs such as for/while-loops instead of unstructured gotos, it is advantageous to use structured recursion operators instead of unrestricted recursion when using functional language. Thus, in functional programming, we have the fold abstraction.</p>
+<p>A fold or reduction is a high order function that abstracts the process of reducing or collapsing (or folding) a list or recursive structures (such as vectors, lists, and so) into a single value. So, fold is a standard recursion operator that encapsulates a common pattern of recursion for processing lists. It abstracts away the recursive process of the function definition for a very common use case - producing an accumulated result by processing each element in a collection.
+The abstract reasoning behind the folding is this:</p>
+<ol>
+<li>If I can do something to the first item in the list and the first item in the rest of the list</li>
+<li>Then I can do something to the whole list.</li>
+</ol>
+<p>So, typically, a fold deals with two things: a combining function, and a data structure, typically a list of elements. The fold then proceeds to combine elements of the data structure using the function in some systematic way.</p>
+<h3 id="back-to-basics">Back To Basics<a href="#back-to-basics" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>We will now take a look at a simple example. Imagine were were given the task of summing up the numbers of a list. For example the sum of [1, 2, 3, 4] = 1+ 2 + 3 + 4 = 10.<br>
+In C++, we might write the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">
+<span style="color:#75715e">// summing up the list imperatively
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">template</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typename</span> T<span style="color:#f92672">&gt;</span>
+<span style="color:#66d9ef">auto</span> sum(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;&amp;</span> numbers){
+    T total_sum {}; <span style="color:#75715e">// calling the default ctor
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">auto</span> number: numbers){
+        total_sum <span style="color:#f92672">+=</span> number;
+    }
+    <span style="color:#66d9ef">return</span> total_sum;
+}
+</code></pre></div><p>Although this approach works, it&rsquo;s unnecessarily verbose. There are a few places where you might make a mistake, such as making a typo in the loop; nevertheless, this code also defines an inherently serial implementation for summing. Before moving on, let&rsquo;s take a second to think about what we are coding in this example.
+We might want to use a hypothetical function fold to write:</p>
+<pre><code>fold (+) [1,2,3,4]
+</code></pre><p>In this instance, to a rough approximation, you can think fold as replacing the commas in the list with the + operator. Notice that we are applying an operation accepting two parameters (binary function): the accumulated result and the current element of the list. The operation functions must produce a new value.</p>
+<p>Now suppose we want to find whether or not a list of booleans is made out of true values only, we can write:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">// find whether of not a lsit of booleans is amde of true values only imperatively
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">auto</span> <span style="color:#a6e22e">all_true</span>(<span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">bool</span><span style="color:#f92672">&gt;&amp;</span> list_of_booleans){
+    T result <span style="color:#f92672">=</span> true; 
+    <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">auto</span> boolean: booleans){
+        result <span style="color:#f92672">=</span> boolean and result;
+    }
+    <span style="color:#66d9ef">return</span> result;
+}
+</code></pre></div><p>Notice that both functions look almost identical.  With the exception of the different types and different operation ( and (&amp;&amp;) vs +), both functions are equivalent. So, what&rsquo;s going on? Let&rsquo;s think in baby steps:</p>
+<ol>
+<li>We define an initial value (total_sum is 0 and result is true). This initial value is also called the Identity Value or the Neutral Element.</li>
+<li>We are going through all the elements within the input list (traversing the list).</li>
+<li>We are doing an operation inside the for-loop, in our case was plus, and accumulating the result before returning it.</li>
+</ol>
+<p>In general, folding doesn&rsquo;t require the arguments and the binary function&rsquo;s result to have the same type. Folding takes a collection that contains items of type <code>T</code>, an initial value of type<code>R</code> (which doesn&rsquo;t need to be the same as T), and a function <code>f: (R, T) =&gt; R</code>. It calls the specified function on the initial value, called identity function, and the first item in the collection. The result is then passed to the function <code>f</code> along with the next item in the collection. This is repeated until all items from the collection are processed. The algorithm returns the value of type <code>R</code>: the value that the last invocation of function <code>f</code> returned.</p>
+<p>Thus, the choice of the initial value is not random. There is a relationship between the operation you are using and the initial value, also called Identity Value: Assume the operation is any binary function called operation and the initial value is given by a identity function, then you can deduce the identity value used as inital value derives from the relationship: operation(identity, x) = x. Therefore, it follows that the Identity Value for the + (plus) operation is 0 because: <code>x = x + 0</code>.</p>
+<p>The <code>std::accumulate</code> algorithm is an implementation of a general concept called folding (or reduction); it first sums the initial value passed to it and the first item in the collection. That result is then summed with the next item in the collection, and so on. This is repeated until you reach the end of the collection.</p>
+
+      </div></div>
+
+  
+  
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h">Read other posts</span>
+        <hr />
+    </div>
+    <div class="pagination__buttons">
+        
+        
+        <span class="button next">
+            <a href="https://jdiego.github.io/posts/intro-fp/">
+                <span class="button__text">Introduction to Functional Programming</span>
+                <span class="button__icon">→</span>
+            </a>
+        </span>
+        
+    </div>
+</div>
+
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2021 Powered by <a href="http://gohugo.io">Hugo</a></span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://jdiego.github.io/assets/main.js"></script>
+<script src="https://jdiego.github.io/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>
